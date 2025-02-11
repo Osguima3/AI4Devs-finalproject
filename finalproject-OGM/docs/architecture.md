@@ -5,7 +5,11 @@
   - [Frontend](#frontend)
   - [Backend](#backend)
 - [Architecture Patterns](#architecture-patterns)
+  - [Domain-Driven Design (DDD)](#domain-driven-design-ddd)
   - [CQRS/ES Implementation](#cqrses-implementation)
+  - [SOLID Principles](#solid-principles)
+  - [DRY (Don't Repeat Yourself)](#dry-dont-repeat-yourself)
+  - [Clean Code Principles](#clean-code-principles)
 - [High-Level Design](#high-level-design)
   - [System Overview](#system-overview)
   - [Core Components & Interactions](#core-components--interactions)
@@ -23,6 +27,7 @@
   - [Data Aggregation Module](#data-aggregation-module)
   - [Categorization Module](#categorization-module)
   - [Financial Insights Module](#financial-insights-module)
+- [Project Structure](#project-structure)
 
 ## Technical Stack
 
@@ -45,13 +50,49 @@
   - Effect TS for functional programming and error handling
   - TrueLayer SDK for financial data aggregation
   - Redis for event bus and caching
-- **Database**: PostgreSQL with Effect TS query builders
+- **Database**: 
+  - PostgreSQL with Effect TS query builders
+  - Nessie for database migrations
 - **Additional Libraries**:
   - EventStoreDB for event sourcing
   - Redis for event bus and read model cache
   - PostgreSQL for read models
 
 ## Architecture Patterns
+
+### Domain-Driven Design (DDD)
+The system follows DDD principles to maintain a clear separation of concerns and ensure business logic is properly encapsulated:
+
+#### Strategic Design
+- **Bounded Contexts**:
+  - Financial Accounts (banks, investments)
+  - Transactions & Categorization
+  - Budgeting & Goals
+  - Analytics & Insights
+
+#### Tactical Design
+- **Aggregates**:
+  - Account (root) → Transactions
+  - Budget (root) → Categories, Rules
+  - User (root) → Preferences, Connections
+  
+- **Value Objects**:
+  - Money (amount + currency)
+  - CategoryRule
+  - DateRange
+  - TransactionMetadata
+
+- **Domain Events**:
+  - AccountConnected
+  - TransactionCategorized
+  - BudgetUpdated
+  - InsightGenerated
+
+- **Repositories**:
+  - AccountRepository
+  - TransactionRepository
+  - BudgetRepository
+  - CategoryRepository
 
 ### CQRS/ES Implementation
 The system implements Command Query Responsibility Segregation (CQRS) with Event Sourcing (ES) to achieve:
@@ -71,6 +112,91 @@ The system implements Command Query Responsibility Segregation (CQRS) with Event
 - Updated asynchronously via event handlers
 - Cached in Redis for performance
 - Separate models for web and mobile clients when needed
+
+### SOLID Principles
+
+#### Single Responsibility Principle (SRP)
+- Each module has one reason to change
+- Clear separation between command and query responsibilities
+- Dedicated services for specific domain operations
+
+#### Open/Closed Principle (OCP)
+- Extensible command/query handlers
+- Plugin-based provider architecture for financial institutions
+- Category rules system supports custom rules
+
+#### Liskov Substitution Principle (LSP)
+- Abstract financial provider interfaces
+- Interchangeable storage implementations
+- Consistent event handling contracts
+
+#### Interface Segregation Principle (ISP)
+- Specific command/query interfaces
+- Targeted repository interfaces
+- Granular service contracts
+
+#### Dependency Inversion Principle (DIP)
+- Core domain logic depends on abstractions
+- Infrastructure implementations injected at runtime
+- Effect TS for functional dependencies
+
+### DRY (Don't Repeat Yourself)
+
+#### Code Reuse Strategy
+- Shared domain models across bounded contexts
+- Common validation rules
+- Reusable UI components
+- Shared test utilities
+
+#### Infrastructure Patterns
+- Generic repository implementations
+- Common error handling
+- Unified logging approach
+- Shared authentication middleware
+
+### Clean Code Principles
+
+#### Naming Conventions
+- **Intention-Revealing Names**
+  - Commands: `CreateTransactionCommand`, `UpdateBudgetCommand`
+  - Queries: `GetTransactionsByDateQuery`, `GetNetWorthQuery`
+  - Events: `TransactionCreatedEvent`, `BudgetUpdatedEvent`
+  - Services: `TransactionNormalizationService`, `CategoryPredictionService`
+
+#### Function Design
+- **Small and Focused**
+  - Each function does one thing
+  - Maximum 20 lines per function
+  - Clear input/output contracts
+  - Early returns for validation
+
+#### Code Organization
+- **Consistent File Structure**
+  - Separate commands, queries, and events
+  - Group related domain logic
+  - Consistent module organization
+  - Clear dependency hierarchy
+
+#### Error Handling
+- **Functional Error Management**
+  - Effect TS for error handling
+  - Clear error hierarchies
+  - Meaningful error messages
+  - Proper error logging
+
+#### Testing Approach
+- **Test-First Development**
+  - Unit tests for business logic
+  - Integration tests for workflows
+  - E2E tests for critical paths
+  - Clear test naming and structure
+
+#### Comments and Documentation
+- **Self-Documenting Code**
+  - Clear function and variable names
+  - Documented public APIs
+  - Architecture decision records
+  - Essential business logic comments
 
 ## High-Level Design
 
@@ -101,13 +227,107 @@ The system follows a **monolithic backend architecture** while ensuring modulari
 - **Database**: PostgreSQL for relational data storage with read replicas for queries
 
 ## Infrastructure
-TODO: Describe the infrastructure setup, including CI/CD pipelines.
+
+The infrastructure is designed to support both local development and future cloud deployment:
+
+### CI/CD Pipeline
+- **GitHub Actions** for continuous integration
+  - Runs tests (unit, integration, E2E)
+  - Performs static code analysis
+  - Checks code formatting
+  - Generates test coverage reports
+  - Builds Docker images
+  - Runs security scans
+
+### Development Environment
+- **Docker Compose** setup with:
+  - PostgreSQL container
+  - Redis container for caching and event bus
+  - EventStoreDB container
+  - Adminer for database management
+  - Redis Commander for cache inspection
+
+### Monitoring & Logging
+- Structured logging with correlation IDs
+- Performance metrics collection
+- Error tracking and alerting
+- Database query monitoring
+- Cache hit/miss statistics
 
 ## Deployment Model
-TODO: Describe the deployment model, including how to start both backend and frontend Docker containers.
+
+### Local Development
+1. **Docker Compose** setup for local development
+   ```yaml
+   services:
+     app:
+       build: .
+       ports:
+         - "8000:8000"
+       volumes:
+         - .:/app
+     db:
+       image: postgres:latest
+     redis:
+       image: redis:alpine
+     eventstore:
+       image: eventstore/eventstore
+   ```
+
+2. **Development Workflow**
+   - Hot reload enabled for frontend and backend
+   - Watch mode for tests
+   - Local environment variables
+   - Database migrations run automatically
+
+### Production Deployment
+1. **Containerization**
+   - Multi-stage Docker builds
+   - Minimal production images
+   - Environment-specific configurations
+
+2. **Scalability**
+   - Horizontal scaling of web tier
+   - Read replicas for database
+   - Redis cluster for caching
+   - Load balancing with health checks
 
 ## Security Considerations
-TODO: Detail security measures, including encryption, audit logs.
+
+### Data Protection
+- **Encryption**
+  - Data at rest encryption for databases
+  - TLS 1.3 for all communications
+  - Secure key management
+  - Encrypted configuration values
+
+### Authentication & Authorization
+- **Session Management**
+  - Secure session handling
+  - JWT token rotation
+  - CSRF protection
+  - Rate limiting
+
+### Audit & Compliance
+- **Logging**
+  - Security event logging
+  - Access logs
+  - Change audit trail
+  - PII handling logs
+
+### GDPR Compliance
+- **User Rights**
+  - Data export capability
+  - Right to be forgotten implementation
+  - Consent management
+  - Data retention policies
+
+### Financial Data Security
+- **PSD2 Requirements**
+  - Strong Customer Authentication
+  - Secure communication with banks
+  - Transaction signing
+  - Fraud detection measures
 
 ## C4 diagrams
 
@@ -939,3 +1159,202 @@ queue "Event Bus"
    ```
    Query Module -> Report Generator -> Analytics Store -> Return Report
    ```
+
+## Project Structure
+
+```
+/
+├── apps/                       # Application code
+│   ├── backend/                # Backend monolith
+│   │   ├── src/
+│   │   │   ├── domain/         # Domain model and business logic
+│   │   │   ├── application/    # Application services
+│   │   │   ├── infrastructure/ # Infrastructure implementations
+│   │   │   ├── interface/      # Interface adapters
+│   │   │   └── shared/         # Shared utilities
+│   │   ├── db/                 # Database management
+│   │   │   ├── migrations/     # Nessie migrations
+│   │   │   │   ├── timestamps/ # Generated migrations
+│   │   │   │   └── seeds/      # Seed data
+│   │   │   └── clients/        # DB client configurations
+│   │   └── nessie.config.ts    # Nessie configuration
+│   │   ├── tests/
+│   │   └── deno.json
+│   │
+│   └── web/                    # Frontend web application
+│       ├── routes/             # Fresh routes
+│       ├── islands/            # Interactive components
+│       ├── components/         # Shared UI components
+│       ├── tests/
+│       └── fresh.config.ts
+│
+├── packages/                   # Shared packages
+│   ├── types/                  # Shared TypeScript types
+│   ├── ui/                     # Shared UI component library
+│   ├── validation/             # Shared validation rules
+│   └── utils/                  # Shared utilities
+│
+├── tools/                      # Development tools
+│   ├── scripts/                # Build and development scripts
+│   │   ├── seed.ts
+│   │   └── migration.ts
+│   └── generators/             # Code generators
+│
+├── configs/                    # Configuration files
+│   ├── backend/
+│   │   ├── default.ts
+│   │   ├── development.ts
+│   │   └── production.ts
+│   └── web/
+│       ├── default.ts
+│       └── environment.ts
+│
+├── docs/                       # Documentation
+│   ├── architecture.md
+│   ├── testing-strategy.md
+│   └── api/
+│
+├── infra/                      # Infrastructure configuration
+│   ├── docker/                 # Docker configurations
+│   │   ├── development/
+│   │   └── production/
+│   └── kubernetes/             # Kubernetes manifests (future use)
+│
+└── .github/                    # GitHub configurations
+    ├── workflows/              # GitHub Actions
+    └── ISSUE_TEMPLATE/         # Issue templates
+```
+
+### Key Directories
+
+#### Applications (`/apps`)
+- **Backend Application**
+  - Domain-driven design implementation
+  - CQRS/ES architecture
+  - API endpoints and controllers
+  - Infrastructure implementations
+
+- **Web Application**
+  - Fresh routes and pages
+  - Interactive islands
+  - Shared components
+  - Frontend tests
+
+#### Shared Code (`/packages`)
+- **types**: Shared TypeScript interfaces and types
+- **ui**: Reusable UI component library
+- **validation**: Common validation rules
+- **utils**: Shared utility functions
+
+#### Development Tools (`/tools`)
+- **scripts**: Development and maintenance scripts
+- **generators**: Code generators for components/modules
+
+#### Configuration (`/configs`)
+- Environment-specific configurations
+- Separate configs for backend and frontend
+- Security-sensitive settings
+
+#### Documentation (`/docs`)
+- Architecture documentation
+- API documentation
+- Development guides
+
+#### Infrastructure (`/infra`)
+- Docker configurations
+- Kubernetes manifests (future use)
+- Development environment setup
+
+### File Naming Conventions
+
+#### Backend
+- Domain entities: `Entity.ts`
+- Commands: `EntityCommand.ts`
+- Queries: `EntityQuery.ts`
+- Services: `EntityService.ts`
+- Controllers: `EntityController.ts`
+- Tests: `Entity.test.ts`
+
+#### Frontend
+- Pages: `EntityPage.tsx`
+- Islands: `EntityIsland.tsx`
+- Components: `EntityComponent.tsx`
+- Layouts: `EntityLayout.tsx`
+- Styles: `Entity.css.ts`
+
+### Database Migration Strategy
+
+#### Tools and Setup
+- **Nessie**: Type-safe database migration tool for Deno
+- Version-controlled migrations
+- Forward and reverse migrations support
+- Seed data management
+- Migration status tracking
+
+#### Migration Naming Convention
+```typescript
+// Example migration file: db/migrations/timestamps/20240101T120000_create_accounts.ts
+import { AbstractMigration, Info } from "https://deno.land/x/nessie/mod.ts";
+
+export default class extends AbstractMigration {
+  /** Runs on migrate */
+  async up(info: Info): Promise<void> {
+    await this.client.queryArray(`
+      CREATE TABLE accounts (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        balance DECIMAL(19,4) NOT NULL DEFAULT 0,
+        currency CHAR(3) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+  }
+
+  /** Runs on rollback */
+  async down(info: Info): Promise<void> {
+    await this.client.queryArray(`DROP TABLE accounts;`);
+  }
+}
+```
+
+#### Migration Management
+1. **Generation**:
+   ```bash
+   deno task nessie create create_accounts
+   ```
+
+2. **Execution**:
+   ```bash
+   deno task nessie migrate
+   ```
+
+3. **Rollback**:
+   ```bash
+   deno task nessie rollback
+   ```
+
+4. **Status**:
+   ```bash
+   deno task nessie status
+   ```
+
+#### Configuration
+```typescript
+// nessie.config.ts
+import { PostgreSQLClient } from "https://deno.land/x/nessie/mod.ts";
+import { config } from "./config/database.ts";
+
+export default {
+  client: new PostgreSQLClient({
+    database: config.database,
+    hostname: config.host,
+    port: config.port,
+    user: config.user,
+    password: config.password,
+  }),
+  migrationFolders: ["./db/migrations/timestamps"],
+  seedFolders: ["./db/migrations/seeds"],
+};
+```
