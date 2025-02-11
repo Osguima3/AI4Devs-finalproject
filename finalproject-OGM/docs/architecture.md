@@ -198,49 +198,49 @@ User --> [Web Client]
 @enduml
 ```
 
-#### API Gateway
+**API Gateway**
 - Single entry point for all API requests
 - Handles request routing, validation, and authentication
 - Manages API versioning and documentation
 - Implements rate limiting and request throttling
 - Routes requests to Command or Query modules based on operation type
 
-#### Command Module
+**Command Module**
 - Processes write commands from external and internal sources
 - Enforce domain rules and maintain data consistency
 - Generate and store events in the Event Store
 - Handle idempotency and retries
 - Publish events to subscribers via Event Bus
 
-#### Query Module
+**Query Module**
 - Handles all read operations
 - Implements caching strategies
 - Uses read replicas for better performance
 - Subscribes to relevant events to invalidate caches
 
-#### Authentication & Authorization Module
+**Authentication & Authorization Module**
 - Handles user authentication via an OAuth Provider
 - Manages Role-Based Access Control (RBAC) for profile sharing
 
-#### Data Aggregation Module
+**Data Aggregation Module**
 - Connects to external bank and investment APIs
 - Normalizes data into a unified financial model
 - Synchronizes data with various Bank APIs and stores it in the Database
 
-#### AI-Powered Categorization Module
+**Categorization Module**
 - Automatically categorizes transactions based on past behavior
 - Allows users to change transaction categories providing reinforcement to categorization accuracy
 - Stores categorized transactions in the Database
 
-#### Financial Insights Module
+**Financial Insights Module**
 - Computes real-time net worth based on assets and liabilities
 - Generates financial reports and AI-driven suggestions
 - Stores financial metrics in the Database
 
-#### Event Bus
+**Event Bus**
 - Redis-backed event bus for async communication between modules
 
-#### Database
+**Database**
 - PostgreSQL for relational data storage
 - Ensures efficient and structured data access
 
@@ -341,10 +341,6 @@ package "Backend Modules" {
 - Client-specific examples
 - Version compatibility matrices
 
-### **Financial Insights Module**
-
-TODO: Document the module
-
 ### **Command Module**
 
 The Command Module handles all write operations in the system, serving as the single entry point for both API and internal commands from domain modules.
@@ -362,6 +358,7 @@ The Command Module handles all write operations in the system, serving as the si
 package "Command Module" {
     [Command Handler]
     [Command Validator]
+    [Command Router]
     [Aggregate Root]
     [Event Generator]
     [Idempotency Manager]
@@ -371,17 +368,21 @@ package "Command Module" {
 queue "Event Bus"
 
 [API Gateway] --> [Command Handler] : User Commands
-[Domain Services] --> [Command Handler] : Sync/Categorization Commands
 
+' Command flows
 [Command Handler] --> [Command Validator] : Validate
 [Command Handler] -left-> [Idempotency Manager] : Check
+[Command Handler] --> [Command Router] : Route Command
 
-[Command Validator] --> [Domain Services] : Business Rules
+' Domain routing
+[Command Router] --> [Domain Services] : Domain Commands
 
-[Command Handler] --> [Aggregate Root] : Update
-[Aggregate Root] --> [Event Generator] : Generate Events
-[Event Generator] --> [Event Store] : Store Events
-[Event Generator] --> [Event Bus] : Publish Events
+' Event flows
+[Command Router] --> [Aggregate Root] : Local Commands
+[Aggregate Root] --> [Event Generator]
+[Event Generator] -left-> [Event Store]
+[Event Generator] --> [Event Bus]
+
 @enduml
 ```
 
@@ -422,21 +423,28 @@ queue "Event Bus"
 - Handles concurrent commands
 - Maintains command status
 
+**Command Router**
+- Routes commands to appropriate domain modules
+- Maintains domain command registry
+- Handles command responses
+- Manages command timeouts
+- Provides circuit breaking
+
 #### **Key Interactions:**
 
-1. **External Command Flow**:
+1. **Domain Command Flow**:
    ```
-   API Gateway -> Command Handler -> Process
-   ```
-
-2. **Internal Command Flow**:
-   ```
-   Domain Module -> Command Handler -> Process
+   API Gateway -> Command Handler -> Command Router -> Domain Module -> Process
    ```
 
-3. **Background Process Flow**:
+2. **Local Command Flow**:
    ```
-   Data Sync Job -> Data Aggregation Module -> Command Handler -> Process
+   Command Handler -> Aggregate Root -> Event Generator -> Event Bus
+   ```
+
+3. **Domain Response Flow**:
+   ```
+   Domain Module -> Command Router -> Command Handler -> API Gateway
    ```
 
 ### **Query Module**
@@ -469,7 +477,7 @@ queue "Event Bus"
 [API Gateway] --> [Query Handler] : Client Queries
 [Domain Services] --> [Query Handler] : Internal Queries
 
-[Query Handler] --> [Cache Manager] : Check Cache
+[Query Handler] -left-> [Cache Manager] : Check Cache
 [Cache Manager] --> [Redis Cache] : Get/Set
 
 [Query Handler] --> [Query Optimizer] : Optimize & Execute
@@ -477,7 +485,7 @@ queue "Event Bus"
 
 [Event Bus] --> [Read Model Updater] : Domain Events
 [Read Model Updater] --> [Read Models] : Update
-[Read Model Updater] --> [Cache Manager] : Invalidate
+[Read Model Updater] -right-> [Cache Manager] : Invalidate
 @enduml
 ```
 
@@ -837,3 +845,97 @@ queue "Event Bus"
     ```
     Training Manager -> Training Data -> Update Model -> ML Models
     ```
+
+### **Financial Insights Module**
+
+The Financial Insights Module processes financial data to provide real-time insights, reports, and budget tracking.
+
+#### **Core Responsibilities:**
+- Calculate real-time net worth across all accounts
+- Monitor budget compliance and trigger alerts
+- Generate periodic financial reports
+- Track spending patterns and trends
+- Monitor investment performance
+
+#### **Component Diagram:**
+```plantuml
+@startuml
+package "Financial Insights Module" {
+    [Analysis Engine]
+    [Report Generator]
+    [Budget Manager]
+    [Investment Tracker]
+    database "Analytics Store"
+}
+
+queue "Event Bus"
+[Query Module]
+[Command Module]
+
+' Event flows
+[Event Bus] --> [Analysis Engine] : "Transaction Events"
+[Event Bus] --> [Investment Tracker] : "Investment Events"
+
+' Analysis flows
+[Analysis Engine] --> [Analytics Store] : "Store Insights"
+[Investment Tracker] --> [Analytics Store] : "Store Performance"
+
+' Query flows
+[Query Module] --> [Report Generator] : "Report Request"
+[Report Generator] --> [Analytics Store] : "Fetch Data"
+
+' Budget flows
+[Budget Manager] --> [Analytics Store] : "Fetch Budget Data"
+[Budget Manager] --> [Event Bus] : "Publish Alerts"
+[Command Module] -down-> [Budget Manager] : "Create/Update Budget"
+
+[Analysis Engine] -[hidden]right-> [Budget Manager]
+@enduml
+```
+
+#### **Component Details:**
+
+**Analysis Engine**
+- Processes transaction events
+- Calculates financial metrics
+- Identifies spending patterns
+- Tracks recurring expenses
+- Generates trend analysis
+
+**Report Generator**
+- Creates periodic reports
+- Supports custom report periods
+- Generates visualizations
+- Exports in multiple formats
+- Handles report scheduling
+
+**Budget Manager**
+- Tracks budget compliance
+- Provides budget forecasts
+- Handles budget categories
+- Alerts on budget overruns
+- Suggests budget adjustments
+
+**Investment Tracker**
+- Monitors investment returns
+- Tracks portfolio performance
+- Calculates risk metrics
+- Provides market insights
+- Analyzes asset allocation
+
+#### **Key Flows:**
+
+1. **Real-time Analysis Flow**:
+   ```
+   Event Bus -> Analysis Engine -> Analytics Store -> Report Generator
+   ```
+
+2. **Budget Alert Flow**:
+   ```
+   Analysis Engine -> Budget Manager -> Generate Alerts -> Event Bus
+   ```
+
+3. **Report Generation Flow**:
+   ```
+   Query Module -> Report Generator -> Analytics Store -> Return Report
+   ```

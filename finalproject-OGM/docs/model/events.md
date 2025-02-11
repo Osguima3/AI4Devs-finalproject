@@ -104,15 +104,19 @@ This document provides a comprehensive list of events used in the Welz platform,
   }
   ```
 
-### ProfileShared
-- **Publisher**: Command Module
-- **Subscribers**: Query Module, Financial Insights Module
-- **Description**: Emitted when a user grants another user access to view their financial profile
+### BudgetAlertTriggered
+- **Publisher**: Financial Insights Module
+- **Subscribers**: Query Module
+- **Description**: Emitted when spending reaches budget threshold
 - **Payload**:
   ```json
   {
+    "budgetId": "string",
     "userId": "string",
-    "sharedWithUserId": "string",
+    "categoryId": "string",
+    "currentSpending": "number",
+    "budgetLimit": "number",
+    "percentage": "number",
     "timestamp": "string"
   }
   ```
