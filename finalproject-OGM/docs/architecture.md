@@ -9,6 +9,9 @@
 - [High-Level Design](#high-level-design)
   - [System Overview](#system-overview)
   - [Core Components & Interactions](#core-components--interactions)
+- [Infrastructure](#infrastructure)
+- [Deployment Model](#deployment-model)
+- [Security Considerations](#security-considerations)
 - [C4 diagrams](#c4-diagrams)
   - [Context Diagram](#context-diagram)
   - [Container Diagram](#container-diagram)
@@ -20,9 +23,6 @@
   - [Data Aggregation Module](#data-aggregation-module)
   - [Categorization Module](#categorization-module)
   - [Financial Insights Module](#financial-insights-module)
-- [Deployment Model](#deployment-model)
-- [Security Considerations](#security-considerations)
-- [Infrastructure](#infrastructure)
 
 ## Technical Stack
 
@@ -101,13 +101,13 @@ The system follows a **monolithic backend architecture** while ensuring modulari
 - **Database**: PostgreSQL for relational data storage with read replicas for queries
 
 ## Infrastructure
-Describe the infrastructure setup, including cloud regions, CI/CD pipelines, and monitoring tools.
+TODO: Describe the infrastructure setup, including CI/CD pipelines.
 
 ## Deployment Model
-Describe the deployment model, including Docker containers for on-prem PoC and future Kubernetes deployment in the cloud.
+TODO: Describe the deployment model, including how to start both backend and frontend Docker containers.
 
 ## Security Considerations
-Detail security measures, including encryption, audit logs, and compliance with GDPR and PSD2.
+TODO: Detail security measures, including encryption, audit logs.
 
 ## C4 diagrams
 
