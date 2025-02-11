@@ -52,9 +52,9 @@
   - Redis for event bus and caching
 - **Database**: 
   - PostgreSQL with Effect TS query builders
+  - EventStoreDB for event sourcing
   - Nessie for database migrations
 - **Additional Libraries**:
-  - EventStoreDB for event sourcing
   - Redis for event bus and read model cache
   - PostgreSQL for read models
 

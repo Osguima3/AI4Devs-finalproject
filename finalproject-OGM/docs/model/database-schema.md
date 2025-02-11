@@ -287,4 +287,3 @@ CREATE TABLE snapshots_view (
 | response_data     | JSONB         | Cached command execution result                   | Nullable |
 | created_at        | TIMESTAMPTZ   | When idempotency key was first used             | Not Null, Default CURRENT_TIMESTAMP |
 | expires_at        | TIMESTAMPTZ   | When key should be invalidated                   | Not Null |
-````
