@@ -187,7 +187,26 @@ What security measures do we need to follow, taking into account that this is a 
 
 **Prompt 1:**
 
+Implement tests for all changes made in this task.
+
+- Add unit tests for all new classes
+- Add integration tests for new controllers and repository implementations.
+- Use the documentation in #file:testing-strategy.md, create test files in the correct folders and follow testing patterns.
+- Make sure to hit coverage targets
+- Follow the best practices defined in the strategy
+
 **Prompt 2:**
+
+#### Herramientas: Github Copilot + o3-mini
+
+@workspace Update the testing strategy document based on all the tests implemented.
+
+- Make sure to reflect the new approach for integration tests.
+- Refer to the documentation section of the same document and apply the requirements
+- Remove or update obsolete sections:
+  - Remove all references to superdeno as it is no longer used.
+  - Document the createTestServer approach. 
+  - Do not remove E2E as they are not yet implemented
 
 **Prompt 3:**
 
@@ -213,11 +232,22 @@ Let's define all the events required first so that we can better define the comp
 
 ### 4. Especificación de la API
 
+#### Herramientas: Github Copilot Agent + Claude 3.7 Sonnet
+
 **Prompt 1:**
+
+Create the ApiController class defined in the #file:architecture.md file.
+
+- There will be a single route, /api, that will process POST and GET requests.  
+- All Commands should be available via the POST method.  
+- All Queries should be available via the GET method.
+- All other methods should return an error.
+- All other possible routes should return an error.
+- Use the WebTransformer class to format both successful and failure responses.
 
 **Prompt 2:**
 
-**Prompt 3:**
+Create the main entrypoint for the backend by adapting the EffectTS-based controller in #file:ApiController.ts to the app structure expected by Deno.
 
 ---
 
@@ -282,11 +312,16 @@ Develop all the necessary tickets to implement the 3 selected user stories. Use 
 
 **Prompt 2:**
 
-Create a table with all the tickets, sorted by priority
+Create a table with all the tickets, sorted by priority.  
+Include markdown links from the table leading to each of the tickets. Use the column with the ticket number.
 
 **Prompt 3:**
 
-Include markdown links from the table leading to each of the tickets. Use the column with the ticket number.
+Add one more ticket to the backlog:
+
+Create a minimal working connection between backend and frontend.
+- The frontend's main page should return the list of transactions of one of the mock accounts by using GetAccountTransactions. 
+- Update all ticket dependencies
 
 ---
 

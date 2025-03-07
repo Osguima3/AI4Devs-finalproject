@@ -452,5 +452,12 @@ Añadidos PRD y documento de arquitectura, incluyendo patrones de desarrollo, de
 
 **Pull Request 2**
 
+https://github.com/Osguima3/welz/pull/2
+
+- Añadida estructura base del proyecto, tanto de backend como de frontend.
+- Framework de testing listo para usar.
+- Preparado setup de docker para levantar la base de datos.
+- Añadido endpoint simple para comprobar todo que todo el flujo funciona.
+
 **Pull Request 3**
 
