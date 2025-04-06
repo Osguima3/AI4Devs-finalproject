@@ -167,6 +167,13 @@ Seeing that the diagrams are using events and an event bus, let's embrace CQRS. 
 
 Define a file structure for the project defined in #file:architecture.md, separating backend and frontend and infrastructure.
 
+**Prompt 2:**
+
+Organize the project so that all deno commands can be executed from the root of the project.
+
+- Create a parent deno.json file defining both backend and web modules, and referencing the tasks within the nested #file:deno.json files.
+- Extract the common configuration and create a single import_map.json file to be used by both modules
+
 ### **2.4. Infraestructura y despliegue**
 
 **Prompt 1:**
@@ -176,6 +183,13 @@ Provide scripts for starting backend, frontend and database
 **Prompt 2:**
 
 Include a script to execute database migrations.
+
+**Prompt 3:**
+
+#codebase The next step is to deploy this project in production via Deno Deploy. 
+First, extract env variables like the url in #file:BackendClient.ts, the CORS configuration in #file:ApiController.ts,
+or the database connection in #file:PostgresClient.ts.
+Analyze the rest of the project and extract any other parameters you find.
 
 ### **2.5. Seguridad**
 
@@ -207,8 +221,6 @@ Implement tests for all changes made in this task.
   - Remove all references to superdeno as it is no longer used.
   - Document the createTestServer approach. 
   - Do not remove E2E as they are not yet implemented
-
-**Prompt 3:**
 
 ---
 
@@ -248,6 +260,10 @@ Create the ApiController class defined in the #file:architecture.md file.
 **Prompt 2:**
 
 Create the main entrypoint for the backend by adapting the EffectTS-based controller in #file:ApiController.ts to the app structure expected by Deno.
+
+**Prompt 3:**
+
+Document the OpenApi specification for the endpoints defined in #file:ApiController.ts. Store the documentation in the folder defined in #file:architecture.md.
 
 ---
 
@@ -329,6 +345,27 @@ Create a minimal working connection between backend and frontend.
 
 **Prompt 1:**
 
+Generate the database structure and mock data as defined in WELZ-004.
+
+- Use nessie to execute both migrations and seeds
+- Use the database connection details defined in #file:docker-compose.yml
+- Create 50 transactions for each account, spanning the last 6 months.
+
 **Prompt 2:**
 
+Let's implement WELZ-005, defined in #file:backlog.md.
+
+I have used another AI tool to generate the pages for the web app, but it is implemented in React. I need you to convert the screens **as faithfully as possible** to Deno Fresh + Preact and include it in the current project.
+
+The react implementation is stored in the folder containing #file:index.html. It is using mock data, but we should instead fetch data from the backend by using #sym:BackendClient.
+
+Start by implementing the landing screen.
+
 **Prompt 3:**
+
+Create a new category insights page as defined in WELZ-011.
+
+- Use the same page structure and components as in the account view in #transactions.tsx
+- Provide a card element to view the current expenses for the month, as well as the forecast at the end of the month
+- Show a bar chart, similar to the one in accounts, but with a stacked bar to see the progress of how much was spent the last month vs the total forecast.
+- Display the same transaction list, but removing the category dropdown as there will only be one category.

@@ -376,7 +376,7 @@ Muestra estadísticas simples basadas en los datos de transacciones, como el des
 
 ### Ticket 1
 
-[WELZ-009][Backend] Implementar endpoints básicos de analíticas  
+**[WELZ-009][Backend] Implementar endpoints básicos de analíticas**  
 
 #### Descripción
 Crear endpoints para información y estadísticas básicas de gastos.
@@ -418,7 +418,7 @@ Crear el diseño principal del panel de control y los componentes necesarios par
 
 ### Ticket 3
 
-[WELZ-004][Backend] Crear estructura de datos simulados y entidades estáticas  
+**[WELZ-004][Backend] Crear estructura de datos simulados y entidades estáticas**  
 
 #### Descripción  
 Definir e implementar la estructura de datos para información financiera simulada con dos entidades estáticas (Efectivo y Banco).
@@ -461,3 +461,8 @@ https://github.com/Osguima3/welz/pull/2
 
 **Pull Request 3**
 
+https://github.com/Osguima3/welz/pull/3
+
+- Añadidas todas las pantallas del frontend, incluyendo dashboard, transacciones de cuenta y de categorías.
+- Añadida lógica de las queries avanzadas de análisis de transacciones
+- Preparado el setup para hacer deploy en producción.
